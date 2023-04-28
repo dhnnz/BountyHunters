@@ -1,0 +1,2 @@
+broadcast.placebounty.message: "{playerName} has placed a new bounty on {playerPlace}! Who will successfully capture them and claim the reward? Good luck!"
+sender.placebounty.message: "You have successfully placed a bounty of {moneyPlace} on {$playerPlace}! Be on the lookout for any player who might try to capture them and claim the bounty. Good luck!"
