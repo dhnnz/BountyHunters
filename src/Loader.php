@@ -60,8 +60,8 @@ class Loader extends PluginBase{
                 } else {
                     $bountyArray[$playerPlace->getName()]["moneyPlace"] = $moneyPlace;
                 }
-                Server::getInstance()->broadcastMessage(TextFormat::colorize(str_replace(["{playerName}", "{playerPlace"], [$sender->getName(), $playerPlace->getName()], $this->getConfig()->get("broadcast.placebounty.message"))));
-                $sender->sendMessage(TextFormat::colorize(str_replace(["{moneyPlace}", "{playerPlace"], [number_format((float) $moneyPlace), $playerPlace->getName()], $this->getConfig()->get("sender.placebounty.message"))));
+                Server::getInstance()->broadcastMessage(TextFormat::colorize(str_replace(["{moneyPlace}", "{playerName}", "{playerPlace"], [number_format((float) $moneyPlace), $sender->getName(), $playerPlace->getName()], $this->getConfig()->get("broadcast.placebounty.message"))));
+                $sender->sendMessage(TextFormat::colorize(str_replace(["{moneyPlace}", "{playerName}", "{playerPlace"], [number_format((float) $moneyPlace), $sender->getName(), $playerPlace->getName()], $this->getConfig()->get("sender.placebounty.message"))));
                 break;
         }
         return true;
