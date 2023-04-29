@@ -27,6 +27,17 @@ class Loader extends PluginBase{
         $this->bountyConfig = new Config($this->getDataFolder()."bounty.json");
     }
 
+    public function getMessage($message, array $args = []): string{
+        $message = $this->getConfig()->get($message, $message);
+
+        for ($i=0; $i < count($args)-1; $i++) {
+            $replace = str_replace("%$i", $args[$i], $message);
+        }
+        
+        $replace = TextFormat::colorize($replace);
+        return $replace;
+    }
+
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool
     {
         $bountyArray = $this->bountyConfig->getAll();
