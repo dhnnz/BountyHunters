@@ -33,7 +33,7 @@ class Loader extends PluginBase{
         for ($i=0; $i < count($args)-1; $i++) {
             $replace = str_replace("%$i", $args[$i], $message);
         }
-        
+
         $replace = TextFormat::colorize($replace);
         return $replace;
     }
@@ -71,8 +71,8 @@ class Loader extends PluginBase{
                 } else {
                     $bountyArray[$playerPlace->getName()]["moneyPlace"] = $moneyPlace;
                 }
-                Server::getInstance()->broadcastMessage(TextFormat::colorize(str_replace(["{moneyPlace}", "{playerName}", "{playerPlace"], [number_format((float) $moneyPlace), $sender->getName(), $playerPlace->getName()], $this->getConfig()->get("broadcast.placebounty.message"))));
-                $sender->sendMessage(TextFormat::colorize(str_replace(["{moneyPlace}", "{playerName}", "{playerPlace"], [number_format((float) $moneyPlace), $sender->getName(), $playerPlace->getName()], $this->getConfig()->get("sender.placebounty.message"))));
+                Server::getInstance()->broadcastMessage($this->getMessage("broadcast.placebounty.message", [number_format((float) $moneyPlace), $sender->getName(), $playerPlace->getName()]));
+                $sender->sendMessage($this->getMessage("sender.placebounty.message", [number_format((float) $moneyPlace), $sender->getName(), $playerPlace->getName()]));
                 break;
         }
         return true;
