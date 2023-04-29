@@ -10,7 +10,8 @@ use pocketmine\Server;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
 
-class Loader extends PluginBase{
+class Loader extends PluginBase
+{
 
     /** @var Loader $instance */
     public static $instance;
@@ -22,16 +23,18 @@ class Loader extends PluginBase{
 
     public Config $bountyConfig;
 
-    public function onEnable(): void{
+    public function onEnable(): void
+    {
         $this->saveDefaultConfig();
-        $this->bountyConfig = new Config($this->getDataFolder()."bounty.json");
+        $this->bountyConfig = new Config($this->getDataFolder() . "bounty.json");
     }
 
-    public function getMessage($message, array $args = []): string{
-        $message = $this->getConfig()->get($message, $message);
+    public function getMessage(string $message, array $args = []): string
+    {
+        $replace = $this->getConfig()->get($message, $message);
 
-        for ($i=0; $i < count($args)-1; $i++) {
-            $replace = str_replace("%$i", $args[$i], $message);
+        for ($i = 0; $i < count($args); $i++) {
+            $replace = str_replace("%$i%", $args[$i], $replace);
         }
 
         $replace = TextFormat::colorize($replace);
@@ -42,12 +45,29 @@ class Loader extends PluginBase{
     {
         $bountyArray = $this->bountyConfig->getAll();
 
-        if(!($sender instanceof Player)) return false;
+        switch ($command->getName()) {
+            case "topbounties":
+                arsort($bountyArray);
 
-        switch($command->getName()){
-            case "bounty":
+                $page = isset($args[0]) ? is_numeric($args[0]) ? intval($args[0]) : 1 : 1;
+                $perPage = 5;
+                $offset = ($page - 1) * $perPage;
+
+                $message = "";
+                $top = 1;
+
+                foreach (array_slice($bountyArray, $offset, $perPage) as $name => $data) {
+                    $message .= $this->getMessage("top.message", [$top, $name, number_format($data["moneyPlace"])]);
+                    $top++;
+                }
+
+                $sender->sendMessage($this->getMessage("top.head.message"), [$page]);
+                $sender->sendMessage($message);
                 break;
             case "placebounty":
+                if (!($sender instanceof Player))
+                    return false;
+
                 if (!isset($args[0]) || !isset($args[1])) {
                     $sender->sendMessage(TextFormat::RED . "Usage: /placebounty [playerName] [money]");
                     return false;
@@ -73,6 +93,26 @@ class Loader extends PluginBase{
                 }
                 Server::getInstance()->broadcastMessage($this->getMessage("broadcast.placebounty.message", [number_format((float) $moneyPlace), $sender->getName(), $playerPlace->getName()]));
                 $sender->sendMessage($this->getMessage("sender.placebounty.message", [number_format((float) $moneyPlace), $sender->getName(), $playerPlace->getName()]));
+
+                $this->bountyConfig->setAll($bountyArray);
+                $this->bountyConfig->save();
+                break;
+            case "bounties":
+                if (!isset($args[0])) {
+                    $sender->sendMessage(TextFormat::RED . "Usage: /bounties [playerName]");
+                    return false;
+                }
+
+                $playerPlace = $this->getServer()->getPlayerExact($args[0]);
+
+                if (!($playerPlace instanceof Player)) {
+                    $sender->sendMessage(TextFormat::RED . "Unknown player");
+                    return false;
+                }
+
+                $moneyPlace = isset($bountyArray[$sender->getName()]["moneyPlace"]) ? $bountyArray[$sender->getName()]["moneyPlace"] : 0;
+
+                $sender->sendMessage($this->getMessage("sender.bounties.message", [number_format((float) $moneyPlace), $playerPlace->getName()]));
                 break;
         }
         return true;

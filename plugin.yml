@@ -5,3 +5,19 @@ main: dhnnz\BountyHunters\Loader
 src-namespace-prefix: dhnnz\BountyHunters
 author: dhnnz
 website: https://github.com/dhnnz/BountyHunters
+
+commands:
+  topbounties:
+    description: "Shows a list of players with bounties."
+    permission: bountyhunters.bounty.cmd
+  placebounty:
+    description: "Allows players to place bounties on others."
+    permission: bountyhunters.bounty.cmd
+  bounties:
+    description: "Shows all bounties placed on a specific player."
+    permission: bountyhunters.bounty.cmd
+
+permissions:
+  bountyhunters.bounty.cmd:
+    default: true
+  
