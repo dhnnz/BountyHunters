@@ -53,16 +53,14 @@ class Loader extends PluginBase
                             ClosureContext::create(
                                 function (bool $wasUpdated) use ($player, $damager, $bountyArray, $bountyAmount): void {
                                         if ($wasUpdated) {
-                                            $broadcastMessage = $this->getMessage("broadcast.claimed.message");
                                             $formattedBountyAmount = number_format((float) $bountyAmount);
-                                            Server::getInstance()->broadcastMessage(
-                                                $broadcastMessage,
-                                                [
-                                                    $formattedBountyAmount,
-                                                    $damager->getName(),
-                                                    $player->getName()
-                                                ]
-                                            );
+
+                                            $broadcastMessage = $this->getMessage("broadcast.claimed.message", [
+                                                $formattedBountyAmount,
+                                                $damager->getName(),
+                                                $player->getName()
+                                            ]);
+                                            Server::getInstance()->broadcastMessage($broadcastMessage);
 
                                             if (isset($bountyArray[$player->getName()])) {
                                                 unset($bountyArray[$player->getName()]);
