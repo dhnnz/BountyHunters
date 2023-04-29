@@ -5,7 +5,7 @@ main: dhnnz\BountyHunters\Loader
 src-namespace-prefix: dhnnz\BountyHunters
 author: dhnnz
 website: https://github.com/dhnnz/BountyHunters
-depdend: BedrockEconomy
+depend: BedrockEconomy
 
 commands:
   topbounties:
