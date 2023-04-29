@@ -2,8 +2,14 @@
 
 namespace dhnnz\BountyHunters;
 
+use cooldogedev\BedrockEconomy\api\BedrockEconomyAPI;
+use cooldogedev\BedrockEconomy\libs\cooldogedev\libSQL\context\ClosureContext;
 use pocketmine\command\CommandSender;
 use pocketmine\command\Command;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
+use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\EventPriority;
+use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
@@ -27,6 +33,53 @@ class Loader extends PluginBase
     {
         $this->saveDefaultConfig();
         $this->bountyConfig = new Config($this->getDataFolder() . "bounty.json");
+
+        $this->getServer()->getPluginManager()->registerEvent(
+            PlayerDeathEvent::class,
+            function (PlayerDeathEvent $event) {
+                $player = $event->getPlayer();
+                $bountyArray = $this->bountyConfig->getAll();
+
+                $cause = $player->getLastDamageCause();
+
+                if ($cause instanceof EntityDamageByEntityEvent) {
+                    $damager = $cause->getDamager();
+
+                    if ($damager instanceof Player) {
+                        $bountyAmount = $bountyArray[$player->getName()]["moneyPlace"];
+                        BedrockEconomyAPI::legacy()->addToPlayerBalance(
+                            $damager->getName(),
+                            $bountyAmount,
+                            ClosureContext::create(
+                                function (bool $wasUpdated) use ($player, $damager, $bountyArray, $bountyAmount): void {
+                                        if ($wasUpdated) {
+                                            $broadcastMessage = $this->getMessage("broadcast.claimed.message");
+                                            $formattedBountyAmount = number_format((float) $bountyAmount);
+                                            Server::getInstance()->broadcastMessage(
+                                                $broadcastMessage,
+                                                [
+                                                    $formattedBountyAmount,
+                                                    $damager->getName(),
+                                                    $player->getName()
+                                                ]
+                                            );
+
+                                            if (isset($bountyArray[$player->getName()])) {
+                                                unset($bountyArray[$player->getName()]);
+                                            }
+
+                                            $this->bountyConfig->setAll($bountyArray);
+                                            $this->bountyConfig->save();
+                                        }
+                                    }
+                            )
+                        );
+                    }
+                }
+            },
+            EventPriority::NORMAL,
+            $this
+        );
     }
 
     public function getMessage(string $message, array $args = []): string
