@@ -61,7 +61,7 @@ class Loader extends PluginBase
                     $top++;
                 }
 
-                $sender->sendMessage($this->getMessage("top.head.message"), [$page]);
+                $sender->sendMessage($this->getMessage("top.head.message", [$page]));
                 $sender->sendMessage($message);
                 break;
             case "placebounty":
@@ -110,9 +110,17 @@ class Loader extends PluginBase
                     return false;
                 }
 
-                $moneyPlace = isset($bountyArray[$sender->getName()]["moneyPlace"]) ? $bountyArray[$sender->getName()]["moneyPlace"] : 0;
+                $moneyPlace = isset($bountyArray[$playerPlace->getName()]["moneyPlace"]) ? $bountyArray[$playerPlace->getName()]["moneyPlace"] : 0;
 
                 $sender->sendMessage($this->getMessage("sender.bounties.message", [number_format((float) $moneyPlace), $playerPlace->getName()]));
+                break;
+            case "mybounties":
+                if (!($sender instanceof Player))
+                    return false;
+
+                $moneyPlace = isset($bountyArray[$sender->getName()]["moneyPlace"]) ? $bountyArray[$sender->getName()]["moneyPlace"] : 0;
+
+                $sender->sendMessage($this->getMessage("sender.mybounties.message", [number_format((float) $moneyPlace), $sender->getName()]));
                 break;
         }
         return true;

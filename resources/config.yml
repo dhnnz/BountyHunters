@@ -2,6 +2,7 @@ broadcast.placebounty.message: "%1% has placed a new bounty on %2%! Who will suc
 
 sender.placebounty.message: "You have successfully placed a bounty of %0% on %2%! Be on the lookout for any player who might try to capture them and claim the bounty. Good luck!"
 sender.bounties.message: "Here are the bounties for %1%: %0%"
+sender.mybounties.message: "Here are the bounties placed on your head: %0%"
 
 top.head.message: "Top bounty - %0%"
-top.message: "%0%. %1% - %2% money"
+top.message: "%0%. %1% - %2% money\n"

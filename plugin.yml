@@ -16,6 +16,9 @@ commands:
   bounties:
     description: "Shows all bounties placed on a specific player."
     permission: bountyhunters.bounty.cmd
+  mybounties:
+    description: "Shows all bounties placed on the player."
+    permission: bountyhunters.bounty.cmd
 
 permissions:
   bountyhunters.bounty.cmd:
