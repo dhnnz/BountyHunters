@@ -1,6 +1,6 @@
 name: BountyHunters
 version: 1.0.0
-api: 4.0.0
+api: 5.0.0
 main: dhnnz\BountyHunters\Loader
 src-namespace-prefix: dhnnz\BountyHunters
 author: dhnnz
