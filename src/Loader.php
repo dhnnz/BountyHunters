@@ -4,6 +4,9 @@ namespace dhnnz\BountyHunters;
 
 use cooldogedev\BedrockEconomy\api\BedrockEconomyAPI;
 use cooldogedev\BedrockEconomy\api\legacy\ClosureContext;
+
+use onebone\economyapi\EconomyAPI;
+
 use pocketmine\command\CommandSender;
 use pocketmine\command\Command;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
@@ -48,30 +51,28 @@ class Loader extends PluginBase
                     if ($damager instanceof Player) {
                         if (isset($bountyArray[$player->getName()]["moneyPlace"])) {
                             $bountyAmount = $bountyArray[$player->getName()]["moneyPlace"];
-                            BedrockEconomyAPI::legacy()->addToPlayerBalance(
-                                $damager->getName(),
+                            $this->getEconomy()?->addMoney(
+                                $damager,
                                 $bountyAmount,
-                                ClosureContext::create(
-                                    function (bool $wasUpdated) use ($player, $damager, $bountyArray, $bountyAmount): void {
-                                        if ($wasUpdated) {
-                                            $formattedBountyAmount = number_format((float) $bountyAmount);
+                                function (bool $wasUpdated) use ($player, $damager, $bountyArray, $bountyAmount): void {
+                                    if ($wasUpdated) {
+                                        $formattedBountyAmount = number_format((float) $bountyAmount);
 
-                                            $broadcastMessage = $this->getMessage("broadcast.claimed.message", [
-                                                $formattedBountyAmount,
-                                                $damager->getName(),
-                                                $player->getName()
-                                            ]);
-                                            Server::getInstance()->broadcastMessage($broadcastMessage);
+                                        $broadcastMessage = $this->getMessage("broadcast.claimed.message", [
+                                            $formattedBountyAmount,
+                                            $damager->getName(),
+                                            $player->getName()
+                                        ]);
+                                        Server::getInstance()->broadcastMessage($broadcastMessage);
 
-                                            if (isset($bountyArray[$player->getName()])) {
-                                                unset($bountyArray[$player->getName()]);
-                                            }
-
-                                            $this->bountyConfig->setAll($bountyArray);
-                                            $this->bountyConfig->save();
+                                        if (isset($bountyArray[$player->getName()])) {
+                                            unset($bountyArray[$player->getName()]);
                                         }
+
+                                        $this->bountyConfig->setAll($bountyArray);
+                                        $this->bountyConfig->save();
                                     }
-                                )
+                                }
                             );
                         }
                     }
@@ -80,6 +81,15 @@ class Loader extends PluginBase
             EventPriority::NORMAL,
             $this
         );
+    }
+
+    public function getEconomy()
+    {
+        return match (true) {
+            (class_exists(EconomyAPI::class)) => new \dhnnz\BountyHunters\economy\EconomyAPI(),
+            (class_exists(BedrockEconomyAPI::class)) => new \dhnnz\BountyHunters\economy\BedrockEconomyAPI(),
+            default => null
+        };
     }
 
     public function getMessage(string $message, array $args = []): string
@@ -150,20 +160,18 @@ class Loader extends PluginBase
                     $bountyArray[$playerPlace->getName()]["moneyPlace"] = $moneyPlace;
                 }
 
-                BedrockEconomyAPI::legacy()->subtractFromPlayerBalance(
-                    $sender->getName(),
+                $this->getEconomy()?->reduceMoney(
+                    $sender,
                     $moneyPlace,
-                    ClosureContext::create(
-                        function (bool $wasUpdated) use ($playerPlace, $sender, $moneyPlace, $bountyArray): void {
-                            if ($wasUpdated) {
-                                Server::getInstance()->broadcastMessage($this->getMessage("broadcast.placebounty.message", [number_format((float) $moneyPlace), $sender->getName(), $playerPlace->getName()]));
-                                $sender->sendMessage($this->getMessage("sender.placebounty.message", [number_format((float) $moneyPlace), $sender->getName(), $playerPlace->getName()]));
+                    function (bool $wasUpdated) use ($playerPlace, $sender, $moneyPlace, $bountyArray): void {
+                        if ($wasUpdated) {
+                            Server::getInstance()->broadcastMessage($this->getMessage("broadcast.placebounty.message", [number_format((float) $moneyPlace), $sender->getName(), $playerPlace->getName()]));
+                            $sender->sendMessage($this->getMessage("sender.placebounty.message", [number_format((float) $moneyPlace), $sender->getName(), $playerPlace->getName()]));
 
-                                $this->bountyConfig->setAll($bountyArray);
-                                $this->bountyConfig->save();
-                            }
-                        },
-                    )
+                            $this->bountyConfig->setAll($bountyArray);
+                            $this->bountyConfig->save();
+                        }
+                    }
                 );
 
                 break;
