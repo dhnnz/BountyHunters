@@ -46,32 +46,34 @@ class Loader extends PluginBase
                     $damager = $cause->getDamager();
 
                     if ($damager instanceof Player) {
-                        $bountyAmount = $bountyArray[$player->getName()]["moneyPlace"];
-                        BedrockEconomyAPI::legacy()->addToPlayerBalance(
-                            $damager->getName(),
-                            $bountyAmount,
-                            ClosureContext::create(
-                                function (bool $wasUpdated) use ($player, $damager, $bountyArray, $bountyAmount): void {
-                                    if ($wasUpdated) {
-                                        $formattedBountyAmount = number_format((float) $bountyAmount);
+                        if (isset($bountyArray[$player->getName()]["moneyPlace"])) {
+                            $bountyAmount = $bountyArray[$player->getName()]["moneyPlace"];
+                            BedrockEconomyAPI::legacy()->addToPlayerBalance(
+                                $damager->getName(),
+                                $bountyAmount,
+                                ClosureContext::create(
+                                    function (bool $wasUpdated) use ($player, $damager, $bountyArray, $bountyAmount): void {
+                                        if ($wasUpdated) {
+                                            $formattedBountyAmount = number_format((float) $bountyAmount);
 
-                                        $broadcastMessage = $this->getMessage("broadcast.claimed.message", [
-                                            $formattedBountyAmount,
-                                            $damager->getName(),
-                                            $player->getName()
-                                        ]);
-                                        Server::getInstance()->broadcastMessage($broadcastMessage);
+                                            $broadcastMessage = $this->getMessage("broadcast.claimed.message", [
+                                                $formattedBountyAmount,
+                                                $damager->getName(),
+                                                $player->getName()
+                                            ]);
+                                            Server::getInstance()->broadcastMessage($broadcastMessage);
 
-                                        if (isset($bountyArray[$player->getName()])) {
-                                            unset($bountyArray[$player->getName()]);
+                                            if (isset($bountyArray[$player->getName()])) {
+                                                unset($bountyArray[$player->getName()]);
+                                            }
+
+                                            $this->bountyConfig->setAll($bountyArray);
+                                            $this->bountyConfig->save();
                                         }
-
-                                        $this->bountyConfig->setAll($bountyArray);
-                                        $this->bountyConfig->save();
                                     }
-                                }
-                            )
-                        );
+                                )
+                            );
+                        }
                     }
                 }
             },
